@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::path::Path;
 
+#[cfg(any(unix, windows))]
 use memmap::Mmap;
 
 /// Controls the strategy used for determining when to use memory maps.
@@ -63,6 +64,7 @@ impl MmapChoice {
     /// If this does attempt to open a memory map and it fails, then `None`
     /// is returned and the corresponding error (along with the file path, if
     /// present) is logged at the debug level.
+    #[cfg(any(unix, windows))]
     pub(crate) fn open(
         &self,
         file: &File,

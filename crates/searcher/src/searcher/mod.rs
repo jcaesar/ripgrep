@@ -658,6 +658,7 @@ impl Searcher {
         M: Matcher,
         S: Sink,
     {
+        #[cfg(any(windows, unix))]
         if let Some(mmap) = self.config.mmap.open(file, path) {
             trace!("{:?}: searching via memory map", path);
             return self.search_slice(matcher, &mmap, write_to);
