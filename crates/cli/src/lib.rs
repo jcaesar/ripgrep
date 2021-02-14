@@ -222,6 +222,11 @@ pub fn is_readable_stdin() -> bool {
             .unwrap_or(false)
     }
 
+    #[cfg(not(any(unix, windows)))]
+    fn imp() -> bool {
+        false
+    }
+
     !is_tty_stdin() && imp()
 }
 

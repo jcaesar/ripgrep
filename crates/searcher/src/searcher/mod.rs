@@ -658,9 +658,12 @@ impl Searcher {
         M: Matcher,
         S: Sink,
     {
-        if let Some(mmap) = self.config.mmap.open(file, path) {
-            trace!("{:?}: searching via memory map", path);
-            return self.search_slice(matcher, &mmap, write_to);
+        #[cfg(any(windows, unix))]
+        {
+            if let Some(mmap) = self.config.mmap.open(file, path) {
+                trace!("{:?}: searching via memory map", path);
+                return self.search_slice(matcher, &mmap, write_to);
+            }
         }
         // Fast path for multi-line searches of files when memory maps are
         // not enabled. This pre-allocates a buffer roughly the size of the

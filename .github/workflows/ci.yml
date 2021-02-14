@@ -83,6 +83,10 @@ jobs:
         - build: win-gnu
           os: windows-2019
           rust: nightly-x86_64-gnu
+        - build: stable-wasi
+          os: ubuntu-18.04
+          rust: stable
+          target: wasm32-wasi
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -103,6 +107,7 @@ jobs:
         toolchain: ${{ matrix.rust }}
         profile: minimal
         override: true
+        target: ${{ matrix.target }}
 
     - name: Use Cross
       if: matrix.target != ''
@@ -118,10 +123,11 @@ jobs:
         echo "target flag is: ${{ env.TARGET_FLAGS }}"
 
     - name: Build ripgrep and all crates
-      run: ${{ env.CARGO }} build --verbose --all ${{ env.TARGET_FLAGS }}
+      run: ${{ env.CARGO }} build --verbose --all ${{ env.TARGET_FLAGS }} --exclude grep-pcre2
 
     - name: Build ripgrep with PCRE2
       run: ${{ env.CARGO }} build --verbose --all --features pcre2 ${{ env.TARGET_FLAGS }}
+      if: matrix.target != 'wasm32-wasi'
 
     # This is useful for debugging problems when the expected build artifacts
     # (like shell completions and man pages) aren't generated.
@@ -146,7 +152,7 @@ jobs:
       # Every integration test spins up qemu to run 'rg', and when PCRE2 is
       # enabled, every integration test is run twice: one with the default
       # regex engine and once with PCRE2.
-      if: matrix.target != ''
+      if: matrix.target != '' && matrix.target != 'wasm32-wasi'
       run: ${{ env.CARGO }} test --verbose --all ${{ env.TARGET_FLAGS }}
 
     - name: Test for existence of build artifacts (Windows)
